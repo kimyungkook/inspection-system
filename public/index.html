@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>검사기록관리 시스템 v01</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome 6 -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="irms-body">
+
+<!-- ════ 로그인 화면 ═══════════════════════════════════════════════ -->
+<div id="page-login" class="page-wrapper d-flex align-items-center justify-content-center min-vh-100">
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo">
+          <i class="fas fa-barcode fa-3x text-primary mb-3"></i>
+        </div>
+        <h1 class="login-title">검사기록관리 시스템</h1>
+        <p class="login-subtitle">Inspection Record Management System</p>
+        <span class="badge bg-primary px-3 py-1">v01</span>
+      </div>
+      <div class="login-body">
+        <div id="login-alert" class="alert alert-danger d-none"></div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold"><i class="fas fa-user me-1"></i> 아이디</label>
+          <input type="text" id="login-username" class="form-control form-control-lg" placeholder="아이디 입력" autocomplete="username">
+        </div>
+        <div class="mb-4">
+          <label class="form-label fw-semibold"><i class="fas fa-lock me-1"></i> 비밀번호</label>
+          <div class="input-group">
+            <input type="password" id="login-password" class="form-control form-control-lg" placeholder="비밀번호 입력" autocomplete="current-password">
+            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
+              <i class="fas fa-eye" id="pwd-eye"></i>
+            </button>
+          </div>
+        </div>
+        <button id="login-btn" class="btn btn-primary btn-lg w-100 login-btn" onclick="doLogin()">
+          <i class="fas fa-sign-in-alt me-2"></i> 로그인
+        </button>
+        <div class="text-center mt-3">
+          <a href="/manual.html" target="_blank" class="text-muted small">
+            <i class="fas fa-book me-1"></i> 사용자 매뉴얼
+          </a>
+        </div>
+      </div>
+      <div class="login-footer">
+        <small class="text-muted">© 2024 검사기록관리 시스템. All rights reserved.</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ 메인 앱 ════════════════════════════════════════════════════ -->
+<div id="page-app" class="d-none">
+
+  <!-- 사이드바 -->
+  <nav id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <i class="fas fa-barcode"></i>
+        <span class="sidebar-title">검사기록관리</span>
+      </div>
+      <button class="sidebar-toggle d-lg-none" onclick="toggleSidebar()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">
+        <i class="fas fa-user-circle fa-2x"></i>
+      </div>
+      <div class="user-info">
+        <span id="sidebar-username" class="user-name">사용자</span>
+        <span id="sidebar-role" class="user-role badge">역할</span>
+      </div>
+    </div>
+
+    <ul class="sidebar-menu">
+      <li class="menu-item active" data-page="dashboard">
+        <a href="#" onclick="navigateTo('dashboard')">
+          <i class="fas fa-tachometer-alt"></i><span>대시보드</span>
+        </a>
+      </li>
+      <li class="menu-item" data-page="inspection">
+        <a href="#" onclick="navigateTo('inspection')">
+          <i class="fas fa-search"></i><span>바코드 검사</span>
+          <span class="badge bg-success ms-auto" id="active-session-badge" style="display:none">진행중</span>
+        </a>
+      </li>
+      <li class="menu-item" data-page="products">
+        <a href="#" onclick="navigateTo('products')">
+          <i class="fas fa-box"></i><span>제품 등록</span>
+        </a>
+      </li>
+      <li class="menu-item" data-page="records">
+        <a href="#" onclick="navigateTo('records')">
+          <i class="fas fa-clipboard-list"></i><span>검사 기록</span>
+        </a>
+      </li>
+      <li class="menu-item admin-only" data-page="users">
+        <a href="#" onclick="navigateTo('users')">
+          <i class="fas fa-users-cog"></i><span>사용자 관리</span>
+        </a>
+      </li>
+      <li class="menu-divider"></li>
+      <li class="menu-item">
+        <a href="/manual.html" target="_blank">
+          <i class="fas fa-book-open"></i><span>사용 매뉴얼</span>
+        </a>
+      </li>
+      <li class="menu-item">
+        <a href="#" onclick="showSettings()">
+          <i class="fas fa-cog"></i><span>설정</span>
+        </a>
+      </li>
+      <li class="menu-item">
+        <a href="#" onclick="doLogout()" class="text-danger">
+          <i class="fas fa-sign-out-alt"></i><span>로그아웃</span>
+        </a>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <small>검사기록관리 시스템 v01</small>
+    </div>
+  </nav>
+
+  <!-- 모바일 오버레이 -->
+  <div id="sidebar-overlay" class="sidebar-overlay d-none" onclick="toggleSidebar()"></div>
+
+  <!-- 메인 콘텐츠 -->
+  <div id="main-content" class="main-content">
+
+    <!-- 상단 헤더 -->
+    <header class="top-header">
+      <div class="header-left">
+        <button class="btn btn-link sidebar-toggle-btn" onclick="toggleSidebar()">
+          <i class="fas fa-bars fa-lg"></i>
+        </button>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><i class="fas fa-home me-1"></i>홈</li>
+            <li class="breadcrumb-item active" id="breadcrumb-current">대시보드</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="header-right">
+        <span id="header-datetime" class="text-muted small me-3"></span>
+        <div class="dropdown">
+          <button class="btn btn-link text-dark dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="fas fa-user-circle me-1"></i>
+            <span id="header-username">사용자</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="#" onclick="showChangePassword()"><i class="fas fa-key me-2"></i>비밀번호 변경</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" onclick="doLogout()"><i class="fas fa-sign-out-alt me-2"></i>로그아웃</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <!-- 페이지 콘텐츠 영역 -->
+    <div id="page-content" class="page-content">
+
+      <!-- ══ 대시보드 ════════════════════════════════════════════════ -->
+      <div id="content-dashboard" class="content-section">
+        <div class="section-header">
+          <h2><i class="fas fa-tachometer-alt me-2"></i>대시보드</h2>
+          <button class="btn btn-outline-primary btn-sm" onclick="loadDashboard()">
+            <i class="fas fa-sync-alt me-1"></i>새로고침
+          </button>
+        </div>
+
+        <!-- 통계 카드 -->
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-lg-3">
+            <div class="stat-card stat-blue">
+              <div class="stat-icon"><i class="fas fa-clipboard-check"></i></div>
+              <div class="stat-value" id="stat-today-total">0</div>
+              <div class="stat-label">오늘 검사</div>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="stat-card stat-green">
+              <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+              <div class="stat-value" id="stat-today-pass">0</div>
+              <div class="stat-label">PASS</div>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="stat-card stat-red">
+              <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
+              <div class="stat-value" id="stat-today-fail">0</div>
+              <div class="stat-label">FAIL</div>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="stat-card stat-orange">
+              <div class="stat-icon"><i class="fas fa-spinner"></i></div>
+              <div class="stat-value" id="stat-active">0</div>
+              <div class="stat-label">진행중 세션</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 차트 & 최근기록 -->
+        <div class="row g-3">
+          <div class="col-lg-7">
+            <div class="card irms-card h-100">
+              <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2 text-primary"></i>최근 7일 검사 현황</h5>
+              </div>
+              <div class="card-body">
+                <canvas id="weekChart" height="200"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-5">
+            <div class="card irms-card h-100">
+              <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2 text-success"></i>오늘 합격률</h5>
+              </div>
+              <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                <canvas id="passRateChart" width="200" height="200"></canvas>
+                <div id="pass-rate-text" class="mt-3 text-center">
+                  <span class="display-6 fw-bold text-success" id="pass-rate-value">-</span>
+                  <div class="text-muted">합격률</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 빠른 실행 -->
+        <div class="row g-3 mt-1">
+          <div class="col-12">
+            <div class="card irms-card">
+              <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bolt me-2 text-warning"></i>빠른 실행</h5>
+              </div>
+              <div class="card-body">
+                <div class="row g-2">
+                  <div class="col-6 col-md-3">
+                    <button class="btn btn-primary w-100 quick-btn" onclick="navigateTo('inspection')">
+                      <i class="fas fa-barcode fa-2x mb-2 d-block"></i>바코드 검사 시작
+                    </button>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <button class="btn btn-success w-100 quick-btn" onclick="navigateTo('products'); setTimeout(()=>showProductModal(),300)">
+                      <i class="fas fa-plus-circle fa-2x mb-2 d-block"></i>제품 등록
+                    </button>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <button class="btn btn-info w-100 quick-btn text-white" onclick="navigateTo('records')">
+                      <i class="fas fa-search fa-2x mb-2 d-block"></i>기록 조회
+                    </button>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <button class="btn btn-warning w-100 quick-btn" onclick="exportRecords()">
+                      <i class="fas fa-file-excel fa-2x mb-2 d-block"></i>Excel 내보내기
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ 바코드 검사 ═══════════════════════════════════════════════ -->
+      <div id="content-inspection" class="content-section d-none">
+        <div class="section-header">
+          <h2><i class="fas fa-search me-2"></i>바코드 검사</h2>
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline-warning btn-sm" onclick="resetInspection()">
+              <i class="fas fa-redo me-1"></i>초기화
+            </button>
+            <button class="btn btn-success btn-sm" onclick="completeInspection()" id="btn-complete" disabled>
+              <i class="fas fa-check-double me-1"></i>검사완료
+            </button>
+          </div>
+        </div>
+
+        <div class="row g-3">
+
+          <!-- 왼쪽: 제품 정보 등록 -->
+          <div class="col-lg-4">
+            <div class="card irms-card">
+              <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-clipboard me-2"></i>검사 제품 정보</h5>
+              </div>
+              <div class="card-body">
+                <div class="mb-2">
+                  <label class="form-label form-label-sm fw-semibold">자재코드 <span class="text-danger">*</span></label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text"><i class="fas fa-tag"></i></span>
+                    <input type="text" id="insp-material-code" class="form-control" placeholder="예: B3224354">
+                  </div>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label form-label-sm fw-semibold">모델명 (품명) <span class="text-danger">*</span></label>
+                  <input type="text" id="insp-model-name" class="form-control form-control-sm" placeholder="예: FBGA 8.2X12.4 Rotation_JUMBO">
+                </div>
+                <div class="mb-2">
+                  <label class="form-label form-label-sm fw-semibold">생산 LOT NO (긴바코드) <span class="text-danger">*</span></label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text"><i class="fas fa-barcode"></i></span>
+                    <input type="text" id="insp-lot-long" class="form-control font-mono" placeholder="예: 20260113001">
+                  </div>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label form-label-sm fw-semibold">자재코드 바코드 (짧은바코드)</label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text"><i class="fas fa-barcode"></i></span>
+                    <input type="text" id="insp-lot-short" class="form-control font-mono" placeholder="예: B3224354 SD">
+                  </div>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label form-label-sm fw-semibold">사이즈 바코드</label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text"><i class="fas fa-barcode"></i></span>
+                    <input type="text" id="insp-barcode-size" class="form-control font-mono" placeholder="예: 8.2X12.4 (J)">
+                  </div>
+                </div>
+                <hr>
+                <div class="mb-2">
+                  <label class="form-label form-label-sm fw-semibold">검사자</label>
+                  <input type="text" id="insp-inspector" class="form-control form-control-sm" placeholder="검사자 이름">
+                </div>
+                <div class="mb-2">
+                  <label class="form-label form-label-sm fw-semibold">출하일자</label>
+                  <input type="date" id="insp-shipment-date" class="form-control form-control-sm">
+                </div>
+                <div class="mb-2">
+                  <label class="form-label form-label-sm fw-semibold">검사수량 (총)</label>
+                  <input type="number" id="insp-total-qty" class="form-control form-control-sm" placeholder="0" min="0">
+                </div>
+
+                <div class="d-grid mt-3">
+                  <button class="btn btn-primary" onclick="startInspectionSession()">
+                    <i class="fas fa-play me-1"></i>검사 세션 시작
+                  </button>
+                </div>
+
+                <!-- 제품 불러오기 -->
+                <div class="mt-2">
+                  <button class="btn btn-outline-secondary btn-sm w-100" onclick="showLoadProduct()">
+                    <i class="fas fa-database me-1"></i>등록된 제품 불러오기
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 진행 현황 -->
+            <div class="card irms-card mt-3" id="session-progress-card" style="display:none!important">
+              <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-tasks me-2"></i>검사 진행 현황</h6>
+              </div>
+              <div class="card-body">
+                <div class="row text-center g-2">
+                  <div class="col-4">
+                    <div class="progress-stat">
+                      <div class="ps-value text-primary" id="prog-total">0</div>
+                      <div class="ps-label">총 검사</div>
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <div class="progress-stat">
+                      <div class="ps-value text-success" id="prog-pass">0</div>
+                      <div class="ps-label">PASS</div>
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <div class="progress-stat">
+                      <div class="ps-value text-danger" id="prog-fail">0</div>
+                      <div class="ps-label">FAIL</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="progress mt-2" style="height:8px">
+                  <div class="progress-bar bg-success" id="prog-bar" style="width:0%"></div>
+                </div>
+                <small class="text-muted" id="prog-ratio">0 / 0</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- 가운데: 스캔 영역 -->
+          <div class="col-lg-5">
+            <div class="card irms-card">
+              <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-barcode me-2"></i>바코드 스캔</h5>
+                <div class="ms-auto">
+                  <button class="btn btn-sm btn-outline-primary" id="btn-camera" onclick="toggleCamera()">
+                    <i class="fas fa-camera me-1"></i>카메라
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+
+                <!-- 스캔 타입 선택 -->
+                <div class="mb-3">
+                  <label class="form-label fw-semibold small">스캔 항목 선택</label>
+                  <div class="btn-group w-100" role="group">
+                    <input type="radio" class="btn-check" name="scan-type" id="st-lot-long" value="lot_long" checked>
+                    <label class="btn btn-outline-primary btn-sm" for="st-lot-long">LOT NO (긴)</label>
+                    <input type="radio" class="btn-check" name="scan-type" id="st-lot-short" value="lot_short">
+                    <label class="btn btn-outline-primary btn-sm" for="st-lot-short">자재코드 (짧은)</label>
+                    <input type="radio" class="btn-check" name="scan-type" id="st-size" value="size">
+                    <label class="btn btn-outline-primary btn-sm" for="st-size">사이즈</label>
+                  </div>
+                </div>
+
+                <!-- 카메라 뷰 -->
+                <div id="camera-container" class="camera-container d-none">
+                  <video id="camera-preview" playsinline autoplay muted></video>
+                  <div class="scan-overlay">
+                    <div class="scan-line"></div>
+                  </div>
+                  <button class="btn btn-sm btn-danger camera-close" onclick="stopCamera()">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+
+                <!-- 수동 입력 / USB 스캐너 입력 -->
+                <div class="scan-input-area">
+                  <label class="form-label fw-semibold">바코드 입력 <span class="badge bg-info text-dark">USB 스캐너 연결 후 이 칸 클릭</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-barcode"></i></span>
+                    <input type="text" id="scan-input" class="form-control form-control-lg font-mono scan-field"
+                      placeholder="바코드를 스캔하거나 입력하세요"
+                      onkeydown="handleScanInput(event)"
+                      autocomplete="off" autocorrect="off" spellcheck="false">
+                    <button class="btn btn-primary" onclick="processScan()">
+                      <i class="fas fa-check"></i>
+                    </button>
+                  </div>
+                  <small class="text-muted"><i class="fas fa-info-circle me-1"></i>USB 스캐너 사용 시 자동으로 입력됩니다 (Enter 자동 인식)</small>
+                </div>
+
+                <!-- 검사 결과 표시 -->
+                <div id="scan-result" class="scan-result-box mt-3 d-none">
+                  <div class="result-content">
+                    <div class="result-icon" id="result-icon"></div>
+                    <div class="result-badge" id="result-badge"></div>
+                    <div class="result-detail mt-2">
+                      <div class="row g-1 text-sm">
+                        <div class="col-4 text-muted">스캔값:</div>
+                        <div class="col-8 font-mono fw-bold" id="result-scanned"></div>
+                        <div class="col-4 text-muted">등록값:</div>
+                        <div class="col-8 font-mono" id="result-expected"></div>
+                        <div class="col-4 text-muted">순번:</div>
+                        <div class="col-8 fw-bold" id="result-seq"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- 오른쪽: 최근 스캔 이력 -->
+          <div class="col-lg-3">
+            <div class="card irms-card h-100">
+              <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-history me-2"></i>스캔 이력</h6>
+                <span class="badge bg-secondary ms-auto" id="scan-count-badge">0</span>
+              </div>
+              <div class="card-body p-2" style="overflow-y:auto; max-height:500px">
+                <div id="scan-history-list" class="scan-history">
+                  <div class="text-center text-muted py-4">
+                    <i class="fas fa-barcode fa-2x mb-2 d-block opacity-25"></i>
+                    <small>스캔 이력이 없습니다</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ══ 제품 등록 ════════════════════════════════════════════════ -->
+      <div id="content-products" class="content-section d-none">
+        <div class="section-header">
+          <h2><i class="fas fa-box me-2"></i>제품 등록</h2>
+          <button class="btn btn-primary btn-sm" onclick="showProductModal()">
+            <i class="fas fa-plus me-1"></i>새 제품 등록
+          </button>
+        </div>
+
+        <!-- 검색 -->
+        <div class="card irms-card mb-3">
+          <div class="card-body py-2">
+            <div class="row g-2">
+              <div class="col-md-3">
+                <input type="text" id="prod-search" class="form-control form-control-sm" placeholder="통합 검색...">
+              </div>
+              <div class="col-md-2">
+                <input type="text" id="prod-filter-code" class="form-control form-control-sm" placeholder="자재코드">
+              </div>
+              <div class="col-md-2">
+                <input type="text" id="prod-filter-lot" class="form-control form-control-sm" placeholder="LOT NO">
+              </div>
+              <div class="col-md-3">
+                <input type="text" id="prod-filter-model" class="form-control form-control-sm" placeholder="모델명">
+              </div>
+              <div class="col-md-2">
+                <button class="btn btn-primary btn-sm w-100" onclick="loadProducts()">
+                  <i class="fas fa-search me-1"></i>검색
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 제품 테이블 -->
+        <div class="card irms-card">
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover irms-table mb-0">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>자재코드</th>
+                    <th>모델명</th>
+                    <th>LOT NO</th>
+                    <th>짧은바코드</th>
+                    <th>제조사</th>
+                    <th>수량</th>
+                    <th>출하일자</th>
+                    <th>등록자</th>
+                    <th>관리</th>
+                  </tr>
+                </thead>
+                <tbody id="products-tbody">
+                  <tr><td colspan="10" class="text-center py-4 text-muted">데이터를 불러오는 중...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ 검사 기록 ════════════════════════════════════════════════ -->
+      <div id="content-records" class="content-section d-none">
+        <div class="section-header">
+          <h2><i class="fas fa-clipboard-list me-2"></i>검사 기록 조회</h2>
+          <button class="btn btn-success btn-sm" onclick="exportRecords()">
+            <i class="fas fa-file-excel me-1"></i>Excel 내보내기
+          </button>
+        </div>
+
+        <!-- 검색 필터 -->
+        <div class="card irms-card mb-3">
+          <div class="card-header">
+            <h6 class="mb-0"><i class="fas fa-filter me-2"></i>검색 조건</h6>
+          </div>
+          <div class="card-body py-2">
+            <div class="row g-2">
+              <div class="col-md-2">
+                <input type="text" id="rec-lot" class="form-control form-control-sm" placeholder="LOT NO">
+              </div>
+              <div class="col-md-2">
+                <input type="text" id="rec-code" class="form-control form-control-sm" placeholder="자재코드">
+              </div>
+              <div class="col-md-2">
+                <input type="text" id="rec-model" class="form-control form-control-sm" placeholder="모델명">
+              </div>
+              <div class="col-md-2">
+                <select id="rec-result" class="form-select form-select-sm">
+                  <option value="">전체 결과</option>
+                  <option value="PASS">PASS</option>
+                  <option value="FAIL">FAIL</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <input type="date" id="rec-from" class="form-control form-control-sm">
+              </div>
+              <div class="col-md-2">
+                <input type="date" id="rec-to" class="form-control form-control-sm">
+              </div>
+              <div class="col-md-2">
+                <input type="text" id="rec-inspector" class="form-control form-control-sm" placeholder="검사자">
+              </div>
+              <div class="col-md-2">
+                <button class="btn btn-primary btn-sm w-100" onclick="loadRecords()">
+                  <i class="fas fa-search me-1"></i>조회
+                </button>
+              </div>
+              <div class="col-md-2">
+                <button class="btn btn-outline-secondary btn-sm w-100" onclick="resetRecordSearch()">
+                  <i class="fas fa-times me-1"></i>초기화
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 요약 통계 -->
+        <div class="row g-2 mb-3" id="records-summary">
+        </div>
+
+        <!-- 기록 테이블 -->
+        <div class="card irms-card">
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover irms-table mb-0 small">
+                <thead>
+                  <tr>
+                    <th>순번</th>
+                    <th>검사일자</th>
+                    <th>검사자</th>
+                    <th>생산LOT NO</th>
+                    <th>자재코드</th>
+                    <th>모델명</th>
+                    <th>출하일자</th>
+                    <th>스캔값</th>
+                    <th>등록값</th>
+                    <th>결과</th>
+                    <th>관리</th>
+                  </tr>
+                </thead>
+                <tbody id="records-tbody">
+                  <tr><td colspan="11" class="text-center py-4 text-muted">조회 조건을 입력하고 조회 버튼을 클릭하세요</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <!-- 페이지네이션 -->
+            <div class="d-flex justify-content-between align-items-center p-3">
+              <small class="text-muted" id="records-info"></small>
+              <nav>
+                <ul class="pagination pagination-sm mb-0" id="records-pagination"></ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ 사용자 관리 ══════════════════════════════════════════════ -->
+      <div id="content-users" class="content-section d-none">
+        <div class="section-header">
+          <h2><i class="fas fa-users-cog me-2"></i>사용자 관리</h2>
+          <button class="btn btn-primary btn-sm" onclick="showUserModal()">
+            <i class="fas fa-user-plus me-1"></i>사용자 추가
+          </button>
+        </div>
+
+        <div class="card irms-card">
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover irms-table mb-0">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>아이디</th>
+                    <th>이름</th>
+                    <th>역할</th>
+                    <th>부서</th>
+                    <th>이메일</th>
+                    <th>상태</th>
+                    <th>마지막 로그인</th>
+                    <th>관리</th>
+                  </tr>
+                </thead>
+                <tbody id="users-tbody">
+                  <tr><td colspan="9" class="text-center py-4 text-muted">불러오는 중...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /page-app -->
+
+<!-- ════ 모달들 ══════════════════════════════════════════════════════ -->
+
+<!-- 제품 등록/수정 모달 -->
+<div class="modal fade" id="modal-product" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title"><i class="fas fa-box me-2"></i><span id="product-modal-title">제품 등록</span></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="product-id">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">자재코드 (AP CODE) <span class="text-danger">*</span></label>
+            <input type="text" id="p-material-code" class="form-control" placeholder="예: B3224354">
+            <small class="text-muted">라벨의 'AP CODE' 또는 '자재코드' 항목</small>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">모델명 (품명) <span class="text-danger">*</span></label>
+            <input type="text" id="p-model-name" class="form-control" placeholder="예: FBGA 8.2X12.4 Rotation_JUMBO DANPLA">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">LOT NO <span class="text-danger">*</span></label>
+            <input type="text" id="p-lot-no" class="form-control font-mono" placeholder="예: 20260113001">
+            <small class="text-muted">라벨의 'LOT NO' 항목</small>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">긴 바코드 값</label>
+            <input type="text" id="p-barcode-long" class="form-control font-mono" placeholder="긴 바코드 스캔값">
+            <small class="text-muted">LOT NO 바코드 스캔값</small>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">짧은 바코드 값</label>
+            <input type="text" id="p-barcode-short" class="form-control font-mono" placeholder="예: B3224354 SD">
+            <small class="text-muted">자재코드 바코드 스캔값</small>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">사이즈 바코드 값</label>
+            <input type="text" id="p-barcode-size" class="form-control font-mono" placeholder="예: 8.2X12.4 (J)">
+            <small class="text-muted">사이즈 라벨 바코드 스캔값</small>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">제조사 (Maker)</label>
+            <input type="text" id="p-maker" class="form-control" placeholder="예: (주)반더스">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">수량</label>
+            <input type="number" id="p-quantity" class="form-control" placeholder="0" min="0">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">단위</label>
+            <select id="p-unit" class="form-select">
+              <option value="Roll">Roll</option>
+              <option value="EA">EA</option>
+              <option value="Box">Box</option>
+              <option value="Reel">Reel</option>
+              <option value="Set">Set</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">제조일자</label>
+            <input type="date" id="p-manufacture-date" class="form-control">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">유효기간</label>
+            <input type="date" id="p-expiry-date" class="form-control">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">출하일자</label>
+            <input type="date" id="p-shipment-date" class="form-control">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold">비고</label>
+            <textarea id="p-notes" class="form-control" rows="2" placeholder="추가 정보"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <button type="button" class="btn btn-primary" onclick="saveProduct()">
+          <i class="fas fa-save me-1"></i>저장
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 사용자 모달 -->
+<div class="modal fade" id="modal-user" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i><span id="user-modal-title">사용자 추가</span></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="user-id">
+        <div class="row g-3">
+          <div class="col-6">
+            <label class="form-label fw-semibold">아이디 <span class="text-danger">*</span></label>
+            <input type="text" id="u-username" class="form-control" placeholder="로그인 아이디">
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold">비밀번호 <span class="text-danger" id="u-pwd-required">*</span></label>
+            <input type="password" id="u-password" class="form-control" placeholder="비밀번호">
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold">이름 <span class="text-danger">*</span></label>
+            <input type="text" id="u-name" class="form-control" placeholder="실명">
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold">역할</label>
+            <select id="u-role" class="form-select">
+              <option value="inspector">검사원</option>
+              <option value="manager">관리자</option>
+              <option value="viewer">조회자</option>
+              <option value="admin">시스템관리자</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold">부서</label>
+            <input type="text" id="u-department" class="form-control" placeholder="소속 부서">
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold">이메일</label>
+            <input type="email" id="u-email" class="form-control" placeholder="이메일">
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold">상태</label>
+            <select id="u-active" class="form-select">
+              <option value="1">활성</option>
+              <option value="0">비활성</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <button type="button" class="btn btn-primary" onclick="saveUser()">
+          <i class="fas fa-save me-1"></i>저장
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 비밀번호 변경 모달 -->
+<div class="modal fade" id="modal-change-pwd" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-key me-2"></i>비밀번호 변경</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">현재 비밀번호</label>
+          <input type="password" id="pwd-current" class="form-control">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">새 비밀번호</label>
+          <input type="password" id="pwd-new" class="form-control">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">새 비밀번호 확인</label>
+          <input type="password" id="pwd-confirm" class="form-control">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">취소</button>
+        <button class="btn btn-primary btn-sm" onclick="changePassword()">변경</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 제품 불러오기 모달 -->
+<div class="modal fade" id="modal-load-product" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-database me-2"></i>등록된 제품 선택</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group mb-3">
+          <input type="text" id="load-prod-search" class="form-control" placeholder="자재코드, LOT NO, 모델명 검색...">
+          <button class="btn btn-primary" onclick="searchProductsForLoad()"><i class="fas fa-search"></i></button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover table-sm irms-table">
+            <thead>
+              <tr><th>자재코드</th><th>모델명</th><th>LOT NO</th><th>수량</th><th>선택</th></tr>
+            </thead>
+            <tbody id="load-products-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast 알림 -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="main-toast" class="toast" role="alert">
+    <div class="toast-header">
+      <i class="fas fa-bell me-2 text-primary"></i>
+      <strong class="me-auto">알림</strong>
+      <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+    </div>
+    <div class="toast-body" id="toast-message"></div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
