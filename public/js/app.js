@@ -171,7 +171,7 @@ function navigateTo(page) {
   // 브레드크럼
   const pageNames = {
     dashboard: '대시보드', inspection: '바코드 검사',
-    products: '제품 등록', records: '검사 기록', users: '사용자 관리'
+    products: '제품 등록', records: '검사 기록', users: '사용자 관리', settings: '시스템 설정'
   };
   document.getElementById('breadcrumb-current').textContent = pageNames[page] || page;
 
@@ -183,6 +183,7 @@ function navigateTo(page) {
   else if (page === 'products') loadProducts();
   else if (page === 'records') { loadRecords(); }
   else if (page === 'users') loadUsers();
+  else if (page === 'settings') loadSettings();
 }
 
 // ─── 사이드바 ─────────────────────────────────────────────────────
@@ -1025,9 +1026,9 @@ function showUserModal(user = null) {
   document.getElementById('user-modal-title').textContent = user ? '사용자 수정' : '사용자 추가';
   document.getElementById('user-id').value = user?.id || '';
   document.getElementById('u-username').value = user?.username || '';
-  document.getElementById('u-username').disabled = !!user;
+  document.getElementById('u-username').disabled = false;
   document.getElementById('u-password').value = '';
-  document.getElementById('u-pwd-required').textContent = user ? '' : '*';
+  document.getElementById('u-pwd-required').textContent = user ? '(변경 시 입력)' : '*';
   document.getElementById('u-name').value = user?.name || '';
   document.getElementById('u-role').value = user?.role || 'inspector';
   document.getElementById('u-department').value = user?.department || '';
@@ -1056,6 +1057,9 @@ async function saveUser() {
     email: document.getElementById('u-email').value.trim(),
     active: document.getElementById('u-active').value
   };
+  if (!payload.username) { showToast('아이디를 입력하세요.', 'error'); return; }
+  if (!payload.name) { showToast('이름을 입력하세요.', 'error'); return; }
+  if (!id && !payload.password) { showToast('비밀번호를 입력하세요.', 'error'); return; }
   if (!payload.password) delete payload.password;
 
   try {
@@ -1113,7 +1117,111 @@ async function changePassword() {
   } catch (e) { showToast(e.message, 'error'); }
 }
 
-// ── 설정 (향후 확장) ──────────────────────────────────────────────
-function showSettings() {
-  showToast('설정 페이지는 향후 업데이트에서 제공될 예정입니다.', 'info');
+// ══════════════════════════════════════════════════════════════════
+// 시스템 설정
+// ══════════════════════════════════════════════════════════════════
+
+let settingsData = [];
+
+async function loadSettings() {
+  try {
+    const data = await apiCall('/users/settings/all');
+    if (!data.success) return showToast(data.message, 'error');
+    settingsData = data.data || [];
+
+    // 카드 UI 값 채우기
+    const get = (key) => (settingsData.find(s => s.key === key) || {}).value || '';
+    document.getElementById('cfg-company-name').value = get('company_name');
+    document.getElementById('cfg-system-version').value = get('system_version');
+    document.getElementById('cfg-barcode-type-1').value = get('barcode_type_1') || 'material_code';
+    document.getElementById('cfg-barcode-type-2').value = get('barcode_type_2') || 'lot_no_long';
+    document.getElementById('cfg-barcode-type-3').value = get('barcode_type_3') || 'lot_no_short';
+    document.getElementById('cfg-auto-sequence').value = get('auto_sequence') || 'true';
+
+    // 전체 목록 테이블
+    const tbody = document.getElementById('settings-tbody');
+    tbody.innerHTML = settingsData.map(s => `
+      <tr>
+        <td class="fw-semibold font-mono small">${s.key}</td>
+        <td>
+          <input type="text" class="form-control form-control-sm" value="${s.value || ''}"
+            onchange="updateSettingValue('${s.key}', this.value)" style="min-width:120px">
+        </td>
+        <td class="small text-muted">${s.description || '-'}</td>
+        <td class="small">${s.updated_at ? s.updated_at.slice(0,16) : '-'}</td>
+        <td>
+          <button class="btn btn-sm btn-outline-danger" onclick="deleteSetting('${s.key}')">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+// 카드 UI에서 일괄 저장
+async function saveAllSettings() {
+  const updates = [
+    { key: 'company_name', value: document.getElementById('cfg-company-name').value.trim() },
+    { key: 'system_version', value: document.getElementById('cfg-system-version').value.trim() },
+    { key: 'barcode_type_1', value: document.getElementById('cfg-barcode-type-1').value },
+    { key: 'barcode_type_2', value: document.getElementById('cfg-barcode-type-2').value },
+    { key: 'barcode_type_3', value: document.getElementById('cfg-barcode-type-3').value },
+    { key: 'auto_sequence', value: document.getElementById('cfg-auto-sequence').value },
+  ];
+  try {
+    for (const u of updates) {
+      await apiCall('/users/settings/update', 'PUT', u);
+    }
+    showToast('설정이 저장되었습니다.', 'success');
+    loadSettings();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+// 테이블에서 개별 값 변경 (즉시 저장)
+async function updateSettingValue(key, value) {
+  try {
+    const data = await apiCall('/users/settings/update', 'PUT', { key, value });
+    if (data.success) showToast(`'${key}' 저장됨`, 'success');
+    else showToast(data.message, 'error');
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+function showAddSettingModal() {
+  document.getElementById('new-setting-key').value = '';
+  document.getElementById('new-setting-value').value = '';
+  document.getElementById('new-setting-desc').value = '';
+  new bootstrap.Modal(document.getElementById('modal-add-setting')).show();
+}
+
+async function addNewSetting() {
+  const key = document.getElementById('new-setting-key').value.trim();
+  const value = document.getElementById('new-setting-value').value.trim();
+  const description = document.getElementById('new-setting-desc').value.trim();
+  if (!key || !value) { showToast('키와 값을 입력하세요.', 'error'); return; }
+  try {
+    const data = await apiCall('/users/settings/add', 'POST', { key, value, description });
+    if (data.success) {
+      bootstrap.Modal.getInstance(document.getElementById('modal-add-setting')).hide();
+      showToast(data.message, 'success');
+      loadSettings();
+    } else {
+      showToast(data.message, 'error');
+    }
+  } catch (e) { showToast(e.message, 'error'); }
+}
+
+async function deleteSetting(key) {
+  if (!confirm(`'${key}' 설정을 삭제하시겠습니까?`)) return;
+  try {
+    const data = await apiCall(`/users/settings/${encodeURIComponent(key)}`, 'DELETE');
+    if (data.success) { showToast(data.message, 'success'); loadSettings(); }
+    else showToast(data.message, 'error');
+  } catch (e) { showToast(e.message, 'error'); }
 }

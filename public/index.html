@@ -114,15 +114,15 @@
           <i class="fas fa-users-cog"></i><span>사용자 관리</span>
         </a>
       </li>
+      <li class="menu-item admin-only" data-page="settings">
+        <a href="#" onclick="navigateTo('settings')">
+          <i class="fas fa-cog"></i><span>시스템 설정</span>
+        </a>
+      </li>
       <li class="menu-divider"></li>
       <li class="menu-item">
         <a href="/manual.html" target="_blank">
           <i class="fas fa-book-open"></i><span>사용 매뉴얼</span>
-        </a>
-      </li>
-      <li class="menu-item">
-        <a href="#" onclick="showSettings()">
-          <i class="fas fa-cog"></i><span>설정</span>
         </a>
       </li>
       <li class="menu-item">
@@ -686,6 +686,116 @@
         </div>
       </div>
 
+      <!-- ══ 시스템 설정 ══════════════════════════════════════════════ -->
+      <div id="content-settings" class="content-section d-none">
+        <div class="section-header">
+          <h2><i class="fas fa-cog me-2"></i>시스템 설정</h2>
+          <button class="btn btn-primary btn-sm" onclick="saveAllSettings()">
+            <i class="fas fa-save me-1"></i>전체 저장
+          </button>
+        </div>
+
+        <!-- 시스템 기본 설정 -->
+        <div class="card irms-card mb-3">
+          <div class="card-header fw-semibold"><i class="fas fa-info-circle me-2"></i>시스템 기본 정보</div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">시스템 이름</label>
+                <input type="text" id="cfg-company-name" class="form-control" placeholder="회사/시스템 이름">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">시스템 버전</label>
+                <input type="text" id="cfg-system-version" class="form-control" placeholder="예: v01">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 바코드 설정 -->
+        <div class="card irms-card mb-3">
+          <div class="card-header fw-semibold"><i class="fas fa-barcode me-2"></i>바코드 스캔 설정</div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">바코드 타입 1 (필드)</label>
+                <select id="cfg-barcode-type-1" class="form-select">
+                  <option value="material_code">자재코드</option>
+                  <option value="lot_no_long">LOT NO (긴 바코드)</option>
+                  <option value="lot_no_short">LOT NO (짧은 바코드)</option>
+                  <option value="size_code">사이즈 코드</option>
+                </select>
+                <small class="text-muted">첫 번째 스캔 바코드 유형</small>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">바코드 타입 2 (필드)</label>
+                <select id="cfg-barcode-type-2" class="form-select">
+                  <option value="material_code">자재코드</option>
+                  <option value="lot_no_long">LOT NO (긴 바코드)</option>
+                  <option value="lot_no_short">LOT NO (짧은 바코드)</option>
+                  <option value="size_code">사이즈 코드</option>
+                </select>
+                <small class="text-muted">두 번째 스캔 바코드 유형</small>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">바코드 타입 3 (필드)</label>
+                <select id="cfg-barcode-type-3" class="form-select">
+                  <option value="material_code">자재코드</option>
+                  <option value="lot_no_long">LOT NO (긴 바코드)</option>
+                  <option value="lot_no_short">LOT NO (짧은 바코드)</option>
+                  <option value="size_code">사이즈 코드</option>
+                </select>
+                <small class="text-muted">세 번째 스캔 바코드 유형</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 기타 설정 -->
+        <div class="card irms-card mb-3">
+          <div class="card-header fw-semibold"><i class="fas fa-sliders-h me-2"></i>기타 옵션</div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">자동 순번 사용</label>
+                <select id="cfg-auto-sequence" class="form-select">
+                  <option value="true">사용</option>
+                  <option value="false">미사용</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 추가 설정 (직접 입력) -->
+        <div class="card irms-card mb-3">
+          <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-list me-2"></i>전체 설정 목록</span>
+            <button class="btn btn-sm btn-outline-secondary" onclick="showAddSettingModal()">
+              <i class="fas fa-plus me-1"></i>항목 추가
+            </button>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover irms-table mb-0">
+                <thead>
+                  <tr>
+                    <th>설정 키</th>
+                    <th>값</th>
+                    <th>설명</th>
+                    <th>마지막 수정</th>
+                    <th>관리</th>
+                  </tr>
+                </thead>
+                <tbody id="settings-tbody">
+                  <tr><td colspan="5" class="text-center py-4 text-muted">불러오는 중...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div><!-- /page-content -->
   </div><!-- /main-content -->
 </div><!-- /page-app -->
@@ -888,6 +998,38 @@
             <tbody id="load-products-tbody"></tbody>
           </table>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 설정 항목 추가 모달 -->
+<div class="modal fade" id="modal-add-setting" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header bg-secondary text-white">
+        <h5 class="modal-title"><i class="fas fa-plus me-2"></i>설정 항목 추가</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">설정 키 <span class="text-danger">*</span></label>
+          <input type="text" id="new-setting-key" class="form-control" placeholder="예: max_session_items">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">값 <span class="text-danger">*</span></label>
+          <input type="text" id="new-setting-value" class="form-control" placeholder="설정 값">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">설명</label>
+          <input type="text" id="new-setting-desc" class="form-control" placeholder="이 설정의 용도 설명">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <button type="button" class="btn btn-primary" onclick="addNewSetting()">
+          <i class="fas fa-plus me-1"></i>추가
+        </button>
       </div>
     </div>
   </div>

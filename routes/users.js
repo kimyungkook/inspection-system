@@ -45,22 +45,35 @@ router.post('/', requireRole('admin'), (req, res) => {
 
 // PUT /api/users/:id
 router.put('/:id', requireRole('admin'), (req, res) => {
-  const { name, role, department, email, active, password } = req.body;
+  const { username, name, role, department, email, active, password } = req.body;
   const db = getDb();
 
-  if (password) {
-    const hash = bcrypt.hashSync(password, 10);
-    db.run(`UPDATE users SET name=?, role=?, department=?, email=?, active=?, password=? WHERE id=?`,
-      [name, role, department, email, active, hash, req.params.id], (err) => {
-        if (err) return res.status(500).json({ success: false, message: err.message });
-        res.json({ success: true, message: '사용자 정보가 수정되었습니다.' });
-      });
+  const doUpdate = () => {
+    if (password) {
+      const hash = bcrypt.hashSync(password, 10);
+      db.run(`UPDATE users SET username=?, name=?, role=?, department=?, email=?, active=?, password=? WHERE id=?`,
+        [username, name, role, department, email, active, hash, req.params.id], (err) => {
+          if (err) return res.status(500).json({ success: false, message: err.message });
+          res.json({ success: true, message: '사용자 정보가 수정되었습니다.' });
+        });
+    } else {
+      db.run(`UPDATE users SET username=?, name=?, role=?, department=?, email=?, active=? WHERE id=?`,
+        [username, name, role, department, email, active, req.params.id], (err) => {
+          if (err) return res.status(500).json({ success: false, message: err.message });
+          res.json({ success: true, message: '사용자 정보가 수정되었습니다.' });
+        });
+    }
+  };
+
+  // 아이디 변경 시 중복 확인
+  if (username) {
+    db.get('SELECT id FROM users WHERE username = ? AND id != ?', [username, req.params.id], (err, row) => {
+      if (err) return res.status(500).json({ success: false, message: err.message });
+      if (row) return res.status(400).json({ success: false, message: '이미 사용중인 아이디입니다.' });
+      doUpdate();
+    });
   } else {
-    db.run(`UPDATE users SET name=?, role=?, department=?, email=?, active=? WHERE id=?`,
-      [name, role, department, email, active, req.params.id], (err) => {
-        if (err) return res.status(500).json({ success: false, message: err.message });
-        res.json({ success: true, message: '사용자 정보가 수정되었습니다.' });
-      });
+    doUpdate();
   }
 });
 
@@ -94,6 +107,30 @@ router.put('/settings/update', requireRole('admin'), (req, res) => {
       if (err) return res.status(500).json({ success: false, message: err.message });
       res.json({ success: true, message: '설정이 저장되었습니다.' });
     });
+});
+
+// POST /api/users/settings/add
+router.post('/settings/add', requireRole('admin'), (req, res) => {
+  const { key, value, description } = req.body;
+  if (!key || !value) return res.status(400).json({ success: false, message: '키와 값은 필수입니다.' });
+  const db = getDb();
+  db.run(`INSERT INTO system_settings (key, value, description, updated_by) VALUES (?, ?, ?, ?)`,
+    [key, value, description || '', req.user.id], (err) => {
+      if (err) {
+        if (err.message.includes('UNIQUE')) return res.status(400).json({ success: false, message: '이미 존재하는 설정 키입니다.' });
+        return res.status(500).json({ success: false, message: err.message });
+      }
+      res.json({ success: true, message: '설정이 추가되었습니다.' });
+    });
+});
+
+// DELETE /api/users/settings/:key
+router.delete('/settings/:key', requireRole('admin'), (req, res) => {
+  const db = getDb();
+  db.run('DELETE FROM system_settings WHERE key = ?', [req.params.key], (err) => {
+    if (err) return res.status(500).json({ success: false, message: err.message });
+    res.json({ success: true, message: '설정이 삭제되었습니다.' });
+  });
 });
 
 module.exports = router;
