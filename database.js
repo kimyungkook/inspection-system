@@ -1,19 +1,29 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 const bcrypt = require('bcryptjs');
 
 const DB_PATH = path.join(__dirname, 'data', 'inspection.db');
+
+// data 디렉토리 자동 생성
+const dataDir = path.dirname(DB_PATH);
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+  console.log('✅ data 디렉토리 생성됨:', dataDir);
+}
 
 let db;
 
 function getDb() {
   if (!db) {
     db = new sqlite3.Database(DB_PATH, (err) => {
-      if (err) console.error('DB 연결 오류:', err);
-      else console.log('✅ 데이터베이스 연결됨:', DB_PATH);
+      if (err) {
+        console.error('❌ DB 연결 오류:', err.message);
+      } else {
+        console.log('✅ 데이터베이스 연결됨:', DB_PATH);
+      }
     });
     db.run('PRAGMA foreign_keys = ON');
-    db.run('PRAGMA journal_mode = WAL');
   }
   return db;
 }

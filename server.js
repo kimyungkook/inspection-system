@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
-const helmet = require('helmet');
 const path = require('path');
 const bodyParser = require('body-parser');
 const { initDatabase } = require('./database');
@@ -9,10 +8,21 @@ const { initDatabase } = require('./database');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ─── 글로벌 에러 핸들러 (서버 크래시 방지) ────────────────────────
+process.on('uncaughtException', (err) => {
+  console.error('❌ 예상치 못한 오류:', err.message);
+  console.error(err.stack);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('❌ 처리되지 않은 Promise 거부:', reason);
+});
+
 // ─── 미들웨어 ──────────────────────────────────────────────────────
-app.use(helmet({ contentSecurityPolicy: false }));
-app.use(cors());
-app.use(morgan('combined'));
+app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'] }));
+app.options('*', cors());
+app.use(morgan('dev'));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
