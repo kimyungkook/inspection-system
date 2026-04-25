@@ -1,0 +1,73 @@
+# ============================================================
+# 자동 APK 빌드 워크플로우
+# 코드를 GitHub에 올리면 자동으로 안드로이드 설치파일(APK)이 만들어집니다.
+# Actions 탭 → 워크플로우 클릭 → Artifacts에서 APK 다운로드
+# ============================================================
+
+name: Flutter APK 자동 빌드
+
+on:
+  push:
+    branches:
+      - claude/fintech-ai-investment-system-WBt2e
+      - main
+    paths:
+      - 'flutter_app/**'
+  workflow_dispatch:   # 수동 실행 버튼도 활성화
+
+jobs:
+  build-apk:
+    name: 안드로이드 APK 빌드
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 코드 가져오기
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      # 2. Java 설치 (Android 빌드에 필요)
+      - name: Java 17 설치
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      # 3. Flutter 설치
+      - name: Flutter 설치
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0'
+          channel: 'stable'
+          cache: true
+
+      # 4. 패키지 설치
+      - name: Flutter 패키지 설치
+        working-directory: flutter_app
+        run: flutter pub get
+
+      # 5. 코드 검사 (오류 미리 확인)
+      - name: 코드 분석
+        working-directory: flutter_app
+        run: flutter analyze --no-fatal-infos
+        continue-on-error: true
+
+      # 6. APK 빌드 (릴리즈 버전)
+      - name: APK 빌드
+        working-directory: flutter_app
+        run: flutter build apk --release --no-tree-shake-icons
+
+      # 7. 빌드된 APK 업로드 (다운로드 가능하게)
+      - name: APK 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: AI주식앱-${{ github.run_number }}
+          path: flutter_app/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+
+      # 8. 빌드 결과 요약
+      - name: 빌드 완료 알림
+        run: |
+          echo "✅ APK 빌드 완료!"
+          echo "📱 다운로드: GitHub → Actions 탭 → 이 워크플로우 → Artifacts"
+          echo "📁 파일명: AI주식앱-${{ github.run_number }}.zip"
+          ls -lh flutter_app/build/app/outputs/flutter-apk/

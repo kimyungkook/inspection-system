@@ -19,6 +19,7 @@ from app.api.v1.auth.router import router as auth_router
 from app.api.v1.stocks.router import router as stocks_router
 from app.api.v1.ai.router import router as ai_router
 from app.api.v1.voice.router import router as voice_router
+from app.api.v1.simulation.router import router as simulation_router
 
 logger = logging.getLogger(__name__)
 
@@ -75,10 +76,11 @@ app.add_middleware(
 # API 라우터 등록
 # 각 기능별 API를 /api/v1/ 하위에 등록
 # -------------------------------------------------------
-app.include_router(auth_router, prefix="/api/v1")
-app.include_router(stocks_router, prefix="/api/v1")
-app.include_router(ai_router, prefix="/api/v1")
-app.include_router(voice_router, prefix="/api/v1")
+app.include_router(auth_router,       prefix="/api/v1")
+app.include_router(stocks_router,     prefix="/api/v1")
+app.include_router(ai_router,         prefix="/api/v1")
+app.include_router(voice_router,      prefix="/api/v1")
+app.include_router(simulation_router, prefix="/api/v1")
 # app.include_router(simulation_router, prefix="/api/v1")
 # app.include_router(signals_router, prefix="/api/v1")
 # app.include_router(alerts_router, prefix="/api/v1")
