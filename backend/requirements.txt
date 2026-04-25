@@ -1,0 +1,56 @@
+# =============================================================
+# AI 주식 매매 가이드 앱 - 필요한 Python 패키지 목록
+# 이 파일은 자동으로 설치됩니다. 직접 건드리지 않아도 됩니다.
+# =============================================================
+
+# 웹 서버 (앱의 두뇌 역할)
+fastapi==0.111.0
+uvicorn[standard]==0.30.1
+
+# 데이터베이스 연결
+sqlalchemy==2.0.30
+asyncpg==0.29.0
+alembic==1.13.1
+psycopg2-binary==2.9.9
+
+# 빠른 임시저장소 연결 (알림, 초대코드 처리)
+redis==5.0.4
+celery==5.4.0
+
+# 보안 (암호화, 로그인 토큰)
+python-jose[cryptography]==3.3.0    # JWT 로그인 토큰 생성/검증
+passlib[bcrypt]==1.7.4              # 비밀번호 암호화
+cryptography==42.0.8                # AES256 API키 암호화
+pyotp==2.9.0                        # OTP 2차인증
+
+# 데이터 처리 (주식 데이터 분석)
+pandas==2.2.2
+numpy==1.26.4
+pandas-ta==0.3.14b                  # 기술적 지표 계산 (RSI, MACD 등)
+
+# AI 모델 연결
+anthropic==0.28.0                   # Claude API
+openai==1.35.3                      # OpenAI API (교체용)
+google-generativeai==0.5.4          # Gemini API (교체용)
+
+# 한국투자증권 API 통신
+httpx==0.27.0                       # HTTP 통신
+websockets==12.0                    # 실시간 시세 수신
+aiohttp==3.9.5
+
+# 알림 발송
+python-telegram-bot==21.3           # 텔레그램 봇
+aiosmtplib==3.0.1                   # 이메일
+
+# 유틸리티
+python-dotenv==1.0.1                # .env 파일 읽기
+pydantic==2.7.4                     # 데이터 유효성 검사
+pydantic-settings==2.3.3
+python-multipart==0.0.9
+slowapi==0.1.9                      # API 요청 횟수 제한
+apscheduler==3.10.4                 # 정기 작업 스케줄러
+
+# 개발/테스트용
+pytest==8.2.2
+pytest-asyncio==0.23.7
+httpx==0.27.0

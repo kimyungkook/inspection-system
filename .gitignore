@@ -1,3 +1,26 @@
 node_modules/
 *.db-shm
 *.db-wal
+
+# 환경설정 파일 (API 키 포함 — 절대 GitHub에 올리면 안 됨)
+.env
+.env.local
+.env.production
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+
+# Alembic 자동 생성 버전 파일 (직접 관리)
+backend/alembic/versions/*.py
+
+# IDE
+.vscode/
+.idea/
+
+# 로그
+*.log
