@@ -37,8 +37,11 @@ class ApiPath {
   static String aiAnalyze(String t) => '/ai/analyze/$t';
   static const aiPerf       = '/ai/performance';
 
-  // 시뮬레이션 (Phase 3.5에서 추가 예정)
+  // 시뮬레이션
   static const simAccounts  = '/simulation/accounts';
   static const simPositions = '/simulation/positions';
   static const simTrades    = '/simulation/trades';
+
+  // 음성 AI 자비스
+  static const voiceQuery   = '/voice/query';
 }
