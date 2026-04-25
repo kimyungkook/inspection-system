@@ -20,6 +20,8 @@ from app.api.v1.stocks.router import router as stocks_router
 from app.api.v1.ai.router import router as ai_router
 from app.api.v1.voice.router import router as voice_router
 from app.api.v1.simulation.router import router as simulation_router
+from app.api.v1.signals.router import router as signals_router
+from app.api.v1.admin.router import router as admin_router
 
 logger = logging.getLogger(__name__)
 
@@ -81,10 +83,8 @@ app.include_router(stocks_router,     prefix="/api/v1")
 app.include_router(ai_router,         prefix="/api/v1")
 app.include_router(voice_router,      prefix="/api/v1")
 app.include_router(simulation_router, prefix="/api/v1")
-# app.include_router(simulation_router, prefix="/api/v1")
-# app.include_router(signals_router, prefix="/api/v1")
-# app.include_router(alerts_router, prefix="/api/v1")
-# app.include_router(admin_router, prefix="/api/v1")
+app.include_router(signals_router,    prefix="/api/v1")
+app.include_router(admin_router,      prefix="/api/v1")
 
 
 # -------------------------------------------------------
