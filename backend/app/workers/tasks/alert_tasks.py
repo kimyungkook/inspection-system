@@ -20,15 +20,24 @@ def send_signal_alert(self, stock_id: int, signal_type: str, grade: str, indicat
     C등급: 사용자 설정에 따라
     """
     try:
-        from app.services.notification.alert_sender import AlertSender
-        sender = AlertSender()
-        result = sender.send_signal_sync(
-            stock_id=stock_id,
-            signal_type=signal_type,
-            grade=grade,
-            indicators=indicators,
-            price=price,
-        )
+        import asyncio
+        from app.services.notification.telegram import send_signal_alert
+        from app.core.database import AsyncSessionLocal
+        from sqlalchemy import select
+        from app.models.stock import Stock
+
+        async def _send():
+            async with AsyncSessionLocal() as db:
+                result = await db.execute(select(Stock).where(Stock.id == stock_id))
+                stock = result.scalar_one_or_none()
+                if not stock:
+                    return False
+                return await send_signal_alert(
+                    ticker=stock.ticker, name=stock.name, price=price,
+                    signal_type=signal_type, grade=grade, triggers=indicators,
+                )
+
+        result = asyncio.get_event_loop().run_until_complete(_send())
         logger.info(f"알림 발송 완료: stock={stock_id} grade={grade}")
         return result
     except Exception as exc:

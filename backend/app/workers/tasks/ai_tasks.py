@@ -24,10 +24,10 @@ def run_daily_ai_analysis(self):
     4. 결과 DB 저장 + 사용자들에게 일일 추천 알림 발송
     """
     try:
-        from app.services.ai_engine.daily_analyzer import DailyAnalyzer
-        analyzer = DailyAnalyzer()
-        result = analyzer.run_sync()
-        logger.info(f"AI 분석 완료: 최종 {result.get('top5_count', 0)}종목 선정")
+        import asyncio
+        from app.services.ai_engine.daily_analyzer import run_daily_analysis
+        result = asyncio.get_event_loop().run_until_complete(run_daily_analysis())
+        logger.info(f"AI 분석 완료: 최종 {len(result.get('top5', []))}종목 선정")
         return result
     except Exception as exc:
         logger.error(f"AI 분석 오류: {exc}")
