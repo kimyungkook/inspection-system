@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     APP_ENV: Literal["development", "production"] = "development"
     APP_PORT: int = 8000
     DEBUG: bool = True
+    DEMO_MODE: bool = False   # True = 실제 API 키 없이 샘플 데이터로 동작
 
     # 데이터베이스 (정보 저장소) 설정
     DB_HOST: str = "db"

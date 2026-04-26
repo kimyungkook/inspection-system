@@ -1,0 +1,98 @@
+# =============================================================
+# 데모 모드 Docker Compose
+# 실제 API 키 없이 샘플 데이터로 앱 전체를 실행합니다.
+#
+# 실행: docker-compose -f docker-compose.demo.yml up -d
+# 중지: docker-compose -f docker-compose.demo.yml down
+# =============================================================
+
+version: '3.9'
+
+services:
+
+  # 백엔드 서버 (데모 모드)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: stock-backend-demo
+    restart: always
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.demo
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    networks:
+      - demo-network
+
+  # 데이터베이스
+  db:
+    image: postgres:15-alpine
+    container_name: stock-db-demo
+    restart: always
+    environment:
+      POSTGRES_DB: stockapp_demo
+      POSTGRES_USER: stockuser
+      POSTGRES_PASSWORD: demopass123!
+    ports:
+      - "5432:5432"
+    volumes:
+      - demo_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stockuser -d stockapp_demo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - demo-network
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: stock-redis-demo
+    restart: always
+    command: redis-server --requirepass demoredis123!
+    ports:
+      - "6379:6379"
+    volumes:
+      - demo_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "demoredis123!", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - demo-network
+
+  # Celery Worker (백그라운드 작업)
+  celery-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: stock-celery-demo
+    restart: always
+    command: celery -A app.workers.celery_app worker --loglevel=warning --concurrency=2
+    env_file:
+      - .env.demo
+    depends_on:
+      - backend
+      - redis
+      - db
+    volumes:
+      - ./backend:/app
+    networks:
+      - demo-network
+
+volumes:
+  demo_postgres_data:
+  demo_redis_data:
+
+networks:
+  demo-network:
+    driver: bridge

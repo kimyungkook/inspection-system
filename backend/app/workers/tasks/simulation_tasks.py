@@ -64,7 +64,7 @@ async def _evaluate_async() -> dict:
                 if not price_data:
                     continue
 
-                curr = Decimal(str(price_data.get("stck_prpr", 0)))
+                curr = Decimal(str(price_data.get("current_price", 0)))
                 if curr <= 0:
                     continue
 

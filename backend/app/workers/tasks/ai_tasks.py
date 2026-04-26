@@ -127,7 +127,7 @@ async def _weekly_report_async() -> dict:
             if not price_data:
                 continue
 
-            curr = float(price_data.get("stck_prpr", 0))
+            curr = float(price_data.get("current_price", 0))
             if curr <= 0:
                 continue
 

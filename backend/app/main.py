@@ -39,6 +39,12 @@ async def lifespan(app: FastAPI):
         await conn.run_sync(Base.metadata.create_all)
     logger.info("데이터베이스 테이블 준비 완료")
 
+    # 데모 모드: 샘플 데이터 자동 입력
+    if settings.DEMO_MODE:
+        logger.info("=== DEMO 모드 활성화 — 샘플 데이터를 입력합니다 ===")
+        from app.core.demo_seeder import seed_demo_data
+        await seed_demo_data()
+
     yield   # 앱이 실행되는 동안 여기서 대기
 
     # === 앱 종료 시 ===

@@ -131,7 +131,7 @@ async def _detect_async() -> dict:
                 price_data = await get_current_price(ticker)
                 if not price_data:
                     continue
-                curr_price = float(price_data.get("stck_prpr", 0))
+                curr_price = float(price_data.get("current_price", 0))
                 if curr_price <= 0:
                     continue
 
